@@ -1,6 +1,11 @@
 .git
 .idea
 runtime
-vendor/bin
+vendor
+web/assets
 tests
 vagrant
+.env
+.dockerignore
+Dockerfile
+apache.conf
