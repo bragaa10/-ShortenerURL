@@ -16,7 +16,7 @@ $this->title = $name;
     </p>
     <div style="margin-top: 32px;">
         <a href="<?= Yii::$app->homeUrl ?>" class="btn btn-primary">
-            <i class="bi bi-house"></i> Página Inicial
+            <i class="bi bi-house"></i> Back to Home
         </a>
     </div>
 </div>

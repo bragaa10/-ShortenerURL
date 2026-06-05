@@ -2,6 +2,7 @@
 
 namespace app\models;
 
+use Yii;
 use yii\base\Model;
 use yii\data\ActiveDataProvider;
 use app\models\ShortUrl;
@@ -11,6 +12,9 @@ use app\models\ShortUrl;
  */
 class ShortUrlSearch extends ShortUrl
 {
+    public $campaign_name;
+    public $q; // Global search query
+
     /**
      * {@inheritdoc}
      */
@@ -18,7 +22,7 @@ class ShortUrlSearch extends ShortUrl
     {
         return [
             [['id', 'user_id', 'campaign_id', 'status', 'expires_at', 'password_protected', 'created_at', 'updated_at'], 'integer'],
-            [['title', 'original_url', 'short_code', 'qr_code_path', 'password_hash', 'notes'], 'safe'],
+            [['title', 'original_url', 'short_code', 'qr_code_path', 'password_hash', 'notes', 'tags', 'campaign_name', 'q'], 'safe'],
         ];
     }
 
@@ -41,7 +45,7 @@ class ShortUrlSearch extends ShortUrl
      */
     public function search($params, $formName = null)
     {
-        $query = ShortUrl::find();
+        $query = ShortUrl::find()->joinWith(['campaign']);
 
         // add conditions that should always apply here
 
@@ -49,32 +53,39 @@ class ShortUrlSearch extends ShortUrl
             'query' => $query,
         ]);
 
+        // Enable sorting by campaign name
+        $dataProvider->sort->attributes['campaign_name'] = [
+            'asc' => ['campaign.name' => SORT_ASC],
+            'desc' => ['campaign.name' => SORT_DESC],
+        ];
+
         $this->load($params, $formName);
 
         if (!$this->validate()) {
-            // uncomment the following line if you do not want to return any records when validation fails
-            // $query->where('0=1');
             return $dataProvider;
         }
 
-        // grid filtering conditions
+        // Global search filtering conditions
+        if ($this->q) {
+            $query->andFilterWhere(['or',
+                ['like', 'short_url.title', $this->q],
+                ['like', 'campaign.name', $this->q],
+                ['like', 'short_url.short_code', $this->q],
+            ]);
+        }
+
+        // grid filtering conditions (individual columns)
         $query->andFilterWhere([
-            'id' => $this->id,
-            'user_id' => $this->user_id,
-            'campaign_id' => $this->campaign_id,
-            'status' => $this->status,
-            'expires_at' => $this->expires_at,
-            'password_protected' => $this->password_protected,
-            'created_at' => $this->created_at,
-            'updated_at' => $this->updated_at,
+            'short_url.id' => $this->id,
+            'short_url.user_id' => $this->user_id,
+            'short_url.campaign_id' => $this->campaign_id,
+            'short_url.status' => $this->status,
         ]);
 
-        $query->andFilterWhere(['like', 'title', $this->title])
-            ->andFilterWhere(['like', 'original_url', $this->original_url])
-            ->andFilterWhere(['like', 'short_code', $this->short_code])
-            ->andFilterWhere(['like', 'qr_code_path', $this->qr_code_path])
-            ->andFilterWhere(['like', 'password_hash', $this->password_hash])
-            ->andFilterWhere(['like', 'notes', $this->notes]);
+        $query->andFilterWhere(['like', 'short_url.title', $this->title])
+            ->andFilterWhere(['like', 'short_url.original_url', $this->original_url])
+            ->andFilterWhere(['like', 'short_url.short_code', $this->short_code])
+            ->andFilterWhere(['like', 'campaign.name', $this->campaign_name]);
 
         return $dataProvider;
     }

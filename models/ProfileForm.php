@@ -49,18 +49,18 @@ class ProfileForm extends Model
             ['email', 'email'],
             ['email', 'unique', 'targetClass' => User::class,
                 'filter' => ['!=', 'id', $this->_user->id],
-                'message' => 'Este email já está em uso por outro utilizador.',
+                'message' => 'This email is already in use by another user.',
             ],
             ['username', 'unique', 'targetClass' => User::class,
                 'filter' => ['!=', 'id', $this->_user->id],
-                'message' => 'Este nome de utilizador já existe.',
+                'message' => 'This username is already taken.',
             ],
             ['profile_bio', 'string'],
             ['profile_company', 'string', 'max' => 150],
             ['profile_website', 'url', 'defaultScheme' => 'https'],
             ['current_password', 'validateCurrentPassword'],
             ['new_password', 'string', 'min' => 6],
-            ['new_password_confirm', 'compare', 'compareAttribute' => 'new_password', 'message' => 'As passwords não coincidem.'],
+            ['new_password_confirm', 'compare', 'compareAttribute' => 'new_password', 'message' => 'Passwords do not match.'],
             [['profile_bio', 'profile_company', 'profile_website', 'current_password', 'new_password', 'new_password_confirm'], 'default', 'value' => null],
         ];
     }
@@ -72,9 +72,9 @@ class ProfileForm extends Model
     {
         if (!empty($this->new_password)) {
             if (empty($this->current_password)) {
-                $this->addError($attribute, 'Para alterar a password, introduza a sua password atual.');
+                $this->addError($attribute, 'To change the password, please enter your current password.');
             } elseif (!$this->_user->validatePassword($this->current_password)) {
-                $this->addError($attribute, 'A password atual está incorreta.');
+                $this->addError($attribute, 'Current password is incorrect.');
             }
         }
     }
@@ -85,14 +85,14 @@ class ProfileForm extends Model
     public function attributeLabels()
     {
         return [
-            'username' => 'Nome',
+            'username' => 'Name',
             'email' => 'Email',
-            'profile_bio' => 'Biografia',
-            'profile_company' => 'Empresa',
+            'profile_bio' => 'Bio',
+            'profile_company' => 'Company',
             'profile_website' => 'Website',
-            'current_password' => 'Password Atual',
-            'new_password' => 'Nova Password',
-            'new_password_confirm' => 'Confirmar Nova Password',
+            'current_password' => 'Current Password',
+            'new_password' => 'New Password',
+            'new_password_confirm' => 'Confirm New Password',
         ];
     }
 

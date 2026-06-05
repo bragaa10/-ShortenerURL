@@ -15,16 +15,22 @@ use yii\web\NotFoundHttpException;
 class RedirectController extends Controller
 {
     /**
-     * Disable CSRF for GET redirect action (public).
-     * CSRF is still validated for POST (password form).
-     * {@inheritdoc}
-     */
-    public $enableCsrfValidation = false;
-
-    /**
      * No layout needed for redirects.
      */
     public $layout = false;
+
+    /**
+     * Disable CSRF only for the public redirect action (GET).
+     * All POST actions (e.g. password form) retain CSRF protection.
+     * {@inheritdoc}
+     */
+    public function beforeAction($action)
+    {
+        if ($action->id === 'go') {
+            $this->enableCsrfValidation = false;
+        }
+        return parent::beforeAction($action);
+    }
 
     /**
      * Handles short URL redirection with full tracking.
@@ -43,28 +49,32 @@ class RedirectController extends Controller
      */
     public function actionGo($shortCode)
     {
+        
         $shortUrl = ShortUrl::find()
             ->where(['short_code' => $shortCode])
             ->one();
 
-        // Link not found
-        if ($shortUrl === null) {
-            throw new NotFoundHttpException('O link solicitado não existe.');
-        }
-
-        // Link inactive
-        if ($shortUrl->status != ShortUrl::STATUS_ACTIVE) {
-            return $this->render('expired', [
-                'reason' => 'inactive',
-                'message' => 'Este link está desativado.',
+        // 1. Link exists?
+        if (!$shortUrl) {
+            return $this->render('error', [
+                'title' => 'Link not found',
+                'message' => 'The link code you entered does not exist or has been removed.',
             ]);
         }
 
-        // Link expired
-        if ($shortUrl->isExpired()) {
-            return $this->render('expired', [
-                'reason' => 'expired',
-                'message' => 'Este link expirou.',
+        // 2. Is Active?
+        if ($shortUrl->status != ShortUrl::STATUS_ACTIVE) {
+            return $this->render('error', [
+                'title' => 'Inactive Link',
+                'message' => 'This link has been deactivated by the owner.',
+            ]);
+        }
+
+        // 3. Is Expired?
+        if ($shortUrl->expires_at && $shortUrl->expires_at < time()) {
+            return $this->render('error', [
+                'title' => 'Expired Link',
+                'message' => 'This link has expired and is no longer available.',
             ]);
         }
 
@@ -80,14 +90,14 @@ class RedirectController extends Controller
                     // Validate CSRF for POST
                     $token = Yii::$app->request->post(Yii::$app->request->csrfParam);
                     if (!Yii::$app->request->validateCsrfToken()) {
-                        $error = 'Pedido inválido. Tente novamente.';
+                        $error = 'Invalid request. Please try again.';
                     } else {
                         $entered = Yii::$app->request->post('link_password', '');
                         if ($shortUrl->validateLinkPassword($entered)) {
                             Yii::$app->session->set($sessionKey, true);
                             // Fall through to tracking + redirect below
                         } else {
-                            $error = 'Password incorreta. Tente novamente.';
+                            $error = 'Incorrect password. Please try again.';
                         }
                     }
                 }
@@ -132,13 +142,15 @@ class RedirectController extends Controller
         $utmContent = $request->get('utm_content');
 
         // Determine access source
-        $source = $request->get('source', 'direct'); // Default to direct
-        if (!empty($utmSource)) {
+        $sourceParam = $request->get('source');
+        $source = 'direct'; // Default
+
+        if ($sourceParam === 'qr') {
+            $source = 'qr';
+        } elseif (!empty($utmSource)) {
             $source = 'utm';
         } elseif (!empty($request->referrer)) {
-            if ($source === 'direct') { // Don't override 'qr' if it was set via param
-                $source = 'referral';
-            }
+            $source = 'referral';
         }
 
         // Get IP address
@@ -152,10 +164,17 @@ class RedirectController extends Controller
         $scanLog->short_url_id = $shortUrl->id;
         $scanLog->accessed_at = $now;
         $scanLog->ip_address = $ipAddress;
+
+        // Skip logging if it's a bot
+        if (($deviceInfo['device_type'] ?? '') === 'bot') {
+            return;
+        }
+
         $scanLog->user_agent = mb_substr($userAgent, 0, 500);
         $scanLog->referer = $request->referrer ? mb_substr($request->referrer, 0, 500) : null;
         $scanLog->source = $source;
         $scanLog->country = $geoInfo['country'] ?? null;
+        $scanLog->country_code = $geoInfo['country_code'] ?? null;
         $scanLog->city = $geoInfo['city'] ?? null;
         $scanLog->device_type = $deviceInfo['device_type'] ?? null;
         $scanLog->os = $deviceInfo['os'] ?? null;
@@ -194,14 +213,10 @@ class RedirectController extends Controller
             } elseif ($dd->isBot()) {
                 $deviceType = 'bot';
             }
-
-            $client = $dd->getClient();
-            $os = $dd->getOs();
-
             return [
                 'device_type' => $deviceType,
-                'os' => is_array($os) ? ($os['name'] ?? 'Unknown') : 'Unknown',
-                'browser' => is_array($client) ? ($client['name'] ?? 'Unknown') : 'Unknown',
+                'os' => ($osInfo['name'] ?? 'Unknown') . ' ' . ($osInfo['version'] ?? ''),
+                'browser' => ($clientInfo['name'] ?? 'Unknown') . ' ' . ($clientInfo['version'] ?? ''),
             ];
         }
 
@@ -225,7 +240,7 @@ class RedirectController extends Controller
             $device_type = 'mobile';
         } elseif (preg_match('/(tablet|ipad|playbook|silk)/i', $ua)) {
             $device_type = 'tablet';
-        } elseif (preg_match('/(bot|crawl|spider|slurp|mediapartners)/i', $ua)) {
+        } elseif (preg_match('/(bot|crawl|spider|slurp|mediapartners|adsbot|whatsapp|facebookexternalhit|linkedinbot|bingpreview|twitterbot|slackbot|discordbot)/i', $ua)) {
             $device_type = 'bot';
         }
 
@@ -261,30 +276,47 @@ class RedirectController extends Controller
             return ['country' => 'Local', 'city' => 'Localhost'];
         }
 
-        try {
-            $url = "https://ipapi.co/{$ipAddress}/json/";
-            $context = stream_context_create([
-                'http' => [
-                    'timeout' => 2, // 2 second timeout to not block redirect
-                    'header' => "User-Agent: EncurtadorURLs/1.0\r\n",
-                ],
-            ]);
+        // Try ipapi.co first
+        $data = $this->fetchGeoData("https://ipapi.co/{$ipAddress}/json/");
+        if ($data && !isset($data['error'])) {
+            return [
+                'country' => $data['country_name'] ?? null,
+                'country_code' => $data['country_code'] ?? null,
+                'city' => $data['city'] ?? null,
+            ];
+        }
 
-            $response = @file_get_contents($url, false, $context);
-            if ($response !== false) {
-                $data = json_decode($response, true);
-                if ($data && !isset($data['error'])) {
-                    return [
-                        'country' => $data['country_name'] ?? null,
-                        'city' => $data['city'] ?? null,
-                    ];
-                }
-            }
-        } catch (\Exception $e) {
-            Yii::warning("GeoIP lookup failed for {$ipAddress}: " . $e->getMessage(), __METHOD__);
+        // Fallback to ip-api.com
+        $data = $this->fetchGeoData("http://ip-api.com/json/{$ipAddress}");
+        if ($data && isset($data['status']) && $data['status'] === 'success') {
+            return [
+                'country' => $data['country'] ?? null,
+                'country_code' => $data['countryCode'] ?? null,
+                'city' => $data['city'] ?? null,
+            ];
         }
 
         return ['country' => null, 'city' => null];
+    }
+
+    /**
+     * Helper to fetch JSON data using cURL (more reliable than file_get_contents)
+     */
+    private function fetchGeoData($url)
+    {
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_URL, $url);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_TIMEOUT, 3);
+        curl_setopt($ch, CURLOPT_USERAGENT, 'EncurtadorURLs/1.0');
+        
+        // Disable SSL verification for compatibility if needed (use with caution in strict envs)
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+
+        $response = curl_exec($ch);
+        curl_close($ch);
+
+        return $response ? json_decode($response, true) : null;
     }
 
     /**

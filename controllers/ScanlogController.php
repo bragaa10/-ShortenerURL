@@ -45,22 +45,42 @@ class ScanlogController extends Controller
      *
      * @return string
      */
-    public function actionIndex()
+    public function actionIndex($short_url_id = null)
     {
         $searchModel = new ScanLogSearch();
-        $dataProvider = $searchModel->search($this->request->queryParams);
-
-        // Non-admin: only see own scans
-        if (!Yii::$app->user->identity->isAdmin()) {
-            $dataProvider->query->innerJoin('short_url', 'short_url.id = scan_log.short_url_id')
-                ->andWhere(['short_url.user_id' => Yii::$app->user->id]);
+        
+        if ($short_url_id) {
+            $shortUrl = \app\models\ShortUrl::findOne($short_url_id);
+            
+            // Security: check ownership
+            if (!$shortUrl || (!Yii::$app->user->identity->isAdmin() && $shortUrl->user_id !== Yii::$app->user->id)) {
+                Yii::$app->session->setFlash('error', 'The requested link was not found or you do not have permission to access it.');
+                return $this->redirect(['scanlog/index']);
+            }
+            
+            // View logs for a specific link
+            $searchModel->short_url_id = $short_url_id;
+            $dataProvider = $searchModel->search($this->request->queryParams);
+            
+            return $this->render('index', [
+                'searchModel' => $searchModel,
+                'dataProvider' => $dataProvider,
+                'shortUrl' => $shortUrl,
+            ]);
         }
 
-        $dataProvider->sort = ['defaultOrder' => ['id' => SORT_DESC]];
+        // Otherwise, show list of links to choose from
+        $linkSearchModel = new \app\models\ShortUrlSearch();
+        $linkDataProvider = $linkSearchModel->search($this->request->queryParams);
+        
+        // Non-admin: only see own links
+        if (!Yii::$app->user->identity->isAdmin()) {
+            $linkDataProvider->query->andWhere(['short_url.user_id' => Yii::$app->user->id]);
+        }
 
-        return $this->render('index', [
-            'searchModel' => $searchModel,
-            'dataProvider' => $dataProvider,
+        return $this->render('links', [
+            'searchModel' => $linkSearchModel,
+            'dataProvider' => $linkDataProvider,
         ]);
     }
 
@@ -73,8 +93,15 @@ class ScanlogController extends Controller
      */
     public function actionView($id)
     {
+        $model = $this->findModel($id);
+        
+        // Security: check if user owns the link this log belongs to
+        if ($model->shortUrl && !Yii::$app->user->identity->isAdmin() && $model->shortUrl->user_id !== Yii::$app->user->id) {
+            throw new \yii\web\ForbiddenHttpException('You do not have permission to view this log entry.');
+        }
+
         return $this->render('view', [
-            'model' => $this->findModel($id),
+            'model' => $model,
         ]);
     }
 
@@ -88,7 +115,7 @@ class ScanlogController extends Controller
     public function actionDelete($id)
     {
         $this->findModel($id)->delete();
-        Yii::$app->session->setFlash('success', 'Registo eliminado.');
+        Yii::$app->session->setFlash('success', 'Record deleted.');
         return $this->redirect(['index']);
     }
 
@@ -107,39 +134,39 @@ class ScanlogController extends Controller
                 ->andWhere(['short_url.user_id' => Yii::$app->user->id]);
         }
 
-        $rows = $query->asArray()->all();
-
-        // Build CSV content
+        // Build CSV content using batch() to avoid memory exhaustion
         $output = fopen('php://temp', 'r+');
 
         // Header row
         fputcsv($output, [
-            'ID', 'Link ID', 'Data/Hora', 'IP', 'País', 'Cidade',
-            'Dispositivo', 'OS', 'Browser', 'Idioma', 'Fonte',
+            'ID', 'Link ID', 'Date/Time', 'IP', 'Country', 'City',
+            'Device', 'OS', 'Browser', 'Language', 'Source',
             'Referer', 'UTM Source', 'UTM Medium', 'UTM Campaign', 'UTM Term', 'UTM Content',
         ]);
 
-        // Data rows
-        foreach ($rows as $row) {
-            fputcsv($output, [
-                $row['id'],
-                $row['short_url_id'],
-                date('Y-m-d H:i:s', $row['accessed_at']),
-                $row['ip_address'] ?? '',
-                $row['country'] ?? '',
-                $row['city'] ?? '',
-                $row['device_type'] ?? '',
-                $row['os'] ?? '',
-                $row['browser'] ?? '',
-                $row['language'] ?? '',
-                $row['source'] ?? '',
-                $row['referer'] ?? '',
-                $row['utm_source'] ?? '',
-                $row['utm_medium'] ?? '',
-                $row['utm_campaign'] ?? '',
-                $row['utm_term'] ?? '',
-                $row['utm_content'] ?? '',
-            ]);
+        // Data rows — batch of 200 at a time to avoid memory exhaustion
+        foreach ($query->asArray()->batch(200) as $batch) {
+            foreach ($batch as $row) {
+                fputcsv($output, [
+                    $row['id'],
+                    $row['short_url_id'],
+                    date('Y-m-d H:i:s', $row['accessed_at']),
+                    $row['ip_address'] ?? '',
+                    $row['country'] ?? '',
+                    $row['city'] ?? '',
+                    $row['device_type'] ?? '',
+                    $row['os'] ?? '',
+                    $row['browser'] ?? '',
+                    $row['language'] ?? '',
+                    $row['source'] ?? '',
+                    $row['referer'] ?? '',
+                    $row['utm_source'] ?? '',
+                    $row['utm_medium'] ?? '',
+                    $row['utm_campaign'] ?? '',
+                    $row['utm_term'] ?? '',
+                    $row['utm_content'] ?? '',
+                ]);
+            }
         }
 
         rewind($output);
@@ -167,6 +194,6 @@ class ScanlogController extends Controller
         if (($model = ScanLog::findOne(['id' => $id])) !== null) {
             return $model;
         }
-        throw new NotFoundHttpException('O registo solicitado não existe.');
+        throw new NotFoundHttpException('The requested log entry does not exist.');
     }
 }

@@ -1,0 +1,31 @@
+Options -Indexes
+
+<IfModule mod_rewrite.c>
+    RewriteEngine on
+    RewriteBase /
+
+    # 1. Serve static assets from web/ folder transparently (no /web/ in URL)
+    RewriteRule ^(css|js|img|assets|uploads|favicon\.ico|robots\.txt)(.*) web/$1$2 [L]
+
+    # 2. Serve real files and directories at root level directly
+    RewriteCond %{REQUEST_FILENAME} -f [OR]
+    RewriteCond %{REQUEST_FILENAME} -d
+    RewriteRule ^ - [L]
+
+    # 3. Everything else → root index.php (Yii2 entry point)
+    RewriteRule ^ index.php [L,QSA]
+</IfModule>
+
+# Security Headers
+<IfModule mod_headers.c>
+    Header always set X-Frame-Options "SAMEORIGIN"
+    Header always set X-Content-Type-Options "nosniff"
+    Header always set X-XSS-Protection "1; mode=block"
+    Header always set Referrer-Policy "strict-origin-when-cross-origin"
+</IfModule>
+
+# Block direct access to dotfiles
+<FilesMatch "^\.">
+    Order allow,deny
+    Deny from all
+</FilesMatch>

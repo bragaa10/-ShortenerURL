@@ -6,7 +6,7 @@
 use yii\bootstrap5\ActiveForm;
 use yii\bootstrap5\Html;
 
-$this->title = 'Redefinir Password';
+$this->title = 'Reset Password';
 ?>
 
 <?php $form = ActiveForm::begin([
@@ -20,21 +20,21 @@ $this->title = 'Redefinir Password';
 ]); ?>
 
 <p style="color: var(--text-secondary); font-size: 14px; margin-bottom: 20px;">
-    Escolha uma nova password com pelo menos 6 caracteres.
+    Choose a new password with at least 6 characters.
 </p>
 
-<?= $form->field($model, 'password')->passwordInput(['autofocus' => true, 'placeholder' => 'Nova password']) ?>
+<?= $form->field($model, 'password')->passwordInput(['autofocus' => true, 'placeholder' => 'New password']) ?>
 
-<?= $form->field($model, 'password_confirm')->passwordInput(['placeholder' => 'Confirmar nova password']) ?>
+<?= $form->field($model, 'password_confirm')->passwordInput(['placeholder' => 'Confirm new password']) ?>
 
 <div class="form-group" style="margin-top: 24px;">
-    <?= Html::submitButton('<i class="bi bi-shield-check"></i> Redefinir Password', ['class' => 'btn btn-primary']) ?>
+    <?= Html::submitButton('<i class="bi bi-shield-check"></i> Reset Password', ['class' => 'btn btn-primary']) ?>
 </div>
 
 <?php ActiveForm::end(); ?>
 
 <div class="auth-links">
     <p><a href="<?= Yii::$app->urlManager->createUrl(['/site/login']) ?>">
-        <i class="bi bi-arrow-left"></i> Voltar ao Login
+        <i class="bi bi-arrow-left"></i> Back to Login
     </a></p>
 </div>

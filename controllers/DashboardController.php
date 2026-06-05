@@ -145,7 +145,7 @@ class DashboardController extends Controller
 
         $browsers = $browsersQuery->asArray()->all();
 
-        // Country distribution
+        // Country distribution (Top list)
         $countriesQuery = ScanLog::find()
             ->select(['country', 'country_count' => 'COUNT(*)'])
             ->innerJoin('short_url', 'short_url.id = scan_log.short_url_id')
@@ -159,6 +159,22 @@ class DashboardController extends Controller
         }
 
         $countries = $countriesQuery->asArray()->all();
+
+        // Heatmap data (All countries with codes)
+        $heatmapQuery = ScanLog::find()
+            ->select(['country_code', 'count' => 'COUNT(*)'])
+            ->innerJoin('short_url', 'short_url.id = scan_log.short_url_id')
+            ->andWhere(['IS NOT', 'country_code', null])
+            ->groupBy('country_code');
+
+        if (!$isAdmin) {
+            $heatmapQuery->andWhere(['short_url.user_id' => $userId]);
+        }
+
+        $heatmapData = [];
+        foreach ($heatmapQuery->asArray()->all() as $row) {
+            $heatmapData[$row['country_code']] = (int) $row['count'];
+        }
 
         // Top campaigns
         $topCampaignsQuery = Campaign::find()
@@ -192,6 +208,7 @@ class DashboardController extends Controller
             'devices' => $devices,
             'browsers' => $browsers,
             'countries' => $countries,
+            'heatmapData' => $heatmapData,
             'topCampaigns' => $topCampaigns,
         ]);
     }

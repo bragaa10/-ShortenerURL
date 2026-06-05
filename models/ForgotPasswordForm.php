@@ -37,13 +37,15 @@ class ForgotPasswordForm extends Model
 
     /**
      * Validates that a user exists with this email.
+     * Returns a generic message to prevent user enumeration.
      */
     public function validateEmailExists($attribute, $params)
     {
+        // Intentionally generic: do not reveal whether the email exists or not
         if (!$this->hasErrors()) {
             $user = User::findByEmail($this->email);
             if (!$user) {
-                $this->addError($attribute, 'Não existe nenhuma conta associada a este email.');
+                $this->addError($attribute, 'Se o email existir, receberás um link de recuperação.');
             }
         }
     }

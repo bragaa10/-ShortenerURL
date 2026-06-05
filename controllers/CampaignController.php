@@ -83,7 +83,7 @@ class CampaignController extends Controller
 
         if ($this->request->isPost) {
             if ($model->load($this->request->post()) && $model->save()) {
-                Yii::$app->session->setFlash('success', 'Campanha criada com sucesso.');
+                Yii::$app->session->setFlash('success', 'Campaign created successfully.');
                 return $this->redirect(['view', 'id' => $model->id]);
             }
         } else {
@@ -107,7 +107,7 @@ class CampaignController extends Controller
         $model = $this->findModel($id);
 
         if ($this->request->isPost && $model->load($this->request->post()) && $model->save()) {
-            Yii::$app->session->setFlash('success', 'Campanha atualizada com sucesso.');
+            Yii::$app->session->setFlash('success', 'Campaign updated successfully.');
             return $this->redirect(['view', 'id' => $model->id]);
         }
 
@@ -126,7 +126,7 @@ class CampaignController extends Controller
     public function actionDelete($id)
     {
         $this->findModel($id)->delete();
-        Yii::$app->session->setFlash('success', 'Campanha eliminada com sucesso.');
+        Yii::$app->session->setFlash('success', 'Campaign deleted successfully.');
 
         return $this->redirect(['index']);
     }
@@ -241,12 +241,12 @@ class CampaignController extends Controller
         $model = Campaign::findOne(['id' => $id]);
 
         if ($model === null) {
-            throw new NotFoundHttpException('A campanha solicitada não existe.');
+            throw new NotFoundHttpException('The requested campaign does not exist.');
         }
 
         // Ownership check
         if (!Yii::$app->user->identity->isAdmin() && $model->user_id != Yii::$app->user->id) {
-            throw new NotFoundHttpException('A campanha solicitada não existe.');
+            throw new NotFoundHttpException('The requested campaign does not exist.');
         }
 
         return $model;

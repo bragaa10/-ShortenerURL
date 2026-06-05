@@ -5,17 +5,37 @@ $db = require __DIR__ . '/db.php';
 
 $config = [
     'id' => 'encurtador',
-    'name' => 'Encurtador URLs',
-    'language' => 'pt-PT',
+    'name' => 'Url Shortener',
+    'language' => 'en-US',
+    'timeZone' => 'Europe/Lisbon',
     'basePath' => dirname(__DIR__),
     'bootstrap' => ['log'],
     'aliases' => [
-        '@bower' => '@vendor/bower-asset',
-        '@npm'   => '@vendor/npm-asset',
+        '@bower'   => '@vendor/bower-asset',
+        '@npm'     => '@vendor/npm-asset',
+        '@webroot' => dirname(__DIR__) . '/web',
+        '@web'     => '',
     ],
     'components' => [
         'request' => [
-            'cookieValidationKey' => 'JrC_UL1zfdklv_rXlrQ-L4xmLUqZcjz1',
+            'cookieValidationKey' => getenv('COOKIE_VALIDATION_KEY') ?: 'JrC_UL1zfdklv_rXlrQ-L4xmLUqZcjz1',
+        ],
+        'session' => [
+            'timeout' => 3600,
+            'cookieParams' => [
+                'httpOnly' => true,
+                'secure'   => YII_ENV === 'prod',
+                'sameSite' => 'Lax',
+            ],
+        ],
+        'response' => [
+            'on beforeSend' => function ($event) {
+                $response = $event->sender;
+                $response->headers->set('X-Frame-Options', 'SAMEORIGIN');
+                $response->headers->set('X-Content-Type-Options', 'nosniff');
+                $response->headers->set('X-XSS-Protection', '1; mode=block');
+                $response->headers->set('Referrer-Policy', 'strict-origin-when-cross-origin');
+            },
         ],
         'cache' => [
             'class' => 'yii\caching\FileCache',
@@ -41,6 +61,10 @@ $config = [
                     'levels' => ['error', 'warning'],
                 ],
             ],
+        ],
+        'gemini' => [
+            'class' => 'app\components\GeminiService',
+            'apiKey' => $params['gemini_api_key'] ?? null,
         ],
         'db' => $db,
         'urlManager' => [
@@ -74,8 +98,9 @@ $config = [
                 'users' => 'user/index',
                 'users/<id:\d+>' => 'user/view',
                 'users/update/<id:\d+>' => 'user/update',
-                // MUST be last — catch-all for short codes
-                '<shortCode:[a-zA-Z0-9_-]+>' => 'redirect/go',
+                'chat/query' => 'chat/query',
+                // MUST be last — catch-all for short codes (excludes common static extensions)
+                '<shortCode:[a-zA-Z0-9-]+(?<!\.ico|\.png|\.jpg|\.svg|\.css|\.js)>' => 'redirect/go',
             ],
         ],
     ],

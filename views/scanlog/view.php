@@ -11,14 +11,14 @@ $this->params['breadcrumbs'][] = $this->title;
 
 <div class="page-header">
     <h1><i class="bi bi-eye"></i> <?= Html::encode($this->title) ?></h1>
-    <?= Html::a('<i class="bi bi-arrow-left"></i> Voltar', ['index'], ['class' => 'btn btn-secondary']) ?>
+    <?= Html::a('<i class="bi bi-arrow-left"></i> Back', ['index'], ['class' => 'btn btn-secondary']) ?>
 </div>
 
 <div class="data-card">
-    <div class="data-card-header"><h3>Detalhes do Acesso</h3></div>
+    <div class="data-card-header"><h3>Access Details</h3></div>
     <div class="data-card-body">
         <table class="table detail-view">
-            <tr><th>ID</th><td><?= $model->id ?></td></tr>
+            <tr><th>ID</th><td><?= Html::encode($model->id) ?></td></tr>
             <tr>
                 <th>Link</th>
                 <td>
@@ -30,15 +30,15 @@ $this->params['breadcrumbs'][] = $this->title;
                     <?php endif; ?>
                 </td>
             </tr>
-            <tr><th>Data/Hora</th><td><?= date('d/m/Y H:i:s', $model->accessed_at) ?></td></tr>
+            <tr><th>Date/Time</th><td><?= date('d/m/Y H:i:s', $model->accessed_at) ?></td></tr>
             <tr><th>IP</th><td><code><?= Html::encode($model->ip_address ?: '—') ?></code></td></tr>
-            <tr><th>País</th><td><?= Html::encode($model->country ?: '—') ?></td></tr>
-            <tr><th>Cidade</th><td><?= Html::encode($model->city ?: '—') ?></td></tr>
-            <tr><th>Dispositivo</th><td><?= Html::encode($model->device_type ?: '—') ?></td></tr>
-            <tr><th>Sistema Operativo</th><td><?= Html::encode($model->os ?: '—') ?></td></tr>
+            <tr><th>Country</th><td><?= Html::encode($model->country ?: '—') ?></td></tr>
+            <tr><th>City</th><td><?= Html::encode($model->city ?: '—') ?></td></tr>
+            <tr><th>Device</th><td><?= Html::encode($model->device_type ?: '—') ?></td></tr>
+            <tr><th>Operating System</th><td><?= Html::encode($model->os ?: '—') ?></td></tr>
             <tr><th>Browser</th><td><?= Html::encode($model->browser ?: '—') ?></td></tr>
-            <tr><th>Idioma</th><td><?= Html::encode($model->language ?: '—') ?></td></tr>
-            <tr><th>Fonte</th><td><span class="badge badge-info"><?= Html::encode($model->source ?: 'direct') ?></span></td></tr>
+            <tr><th>Language</th><td><?= Html::encode($model->language ?: '—') ?></td></tr>
+            <tr><th>Source</th><td><span class="badge badge-info"><?= Html::encode($model->source ?: 'direct') ?></span></td></tr>
             <tr><th>Referer</th><td style="word-break:break-all;"><?= Html::encode($model->referer ?: '—') ?></td></tr>
             <tr><th>User Agent</th><td style="word-break:break-all; font-size:12px;"><?= Html::encode($model->user_agent ?: '—') ?></td></tr>
             <?php if ($model->utm_source): ?>

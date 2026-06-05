@@ -6,7 +6,7 @@
 use yii\bootstrap5\ActiveForm;
 use yii\bootstrap5\Html;
 
-$this->title = 'Criar Conta';
+$this->title = 'Create Account';
 ?>
 
 <?php $form = ActiveForm::begin([
@@ -19,20 +19,20 @@ $this->title = 'Criar Conta';
     ],
 ]); ?>
 
-<?= $form->field($model, 'username')->textInput(['placeholder' => 'O seu nome', 'autofocus' => true]) ?>
+<?= $form->field($model, 'username')->textInput(['placeholder' => 'Your name', 'autofocus' => true]) ?>
 
-<?= $form->field($model, 'email')->textInput(['placeholder' => 'seu@email.com']) ?>
+<?= $form->field($model, 'email')->textInput(['placeholder' => 'your@email.com']) ?>
 
-<?= $form->field($model, 'password')->passwordInput(['placeholder' => 'Mínimo 6 caracteres']) ?>
+<?= $form->field($model, 'password')->passwordInput(['placeholder' => 'Minimum 6 characters']) ?>
 
-<?= $form->field($model, 'password_confirm')->passwordInput(['placeholder' => 'Repetir password']) ?>
+<?= $form->field($model, 'password_confirm')->passwordInput(['placeholder' => 'Repeat password']) ?>
 
 <div class="form-group" style="margin-top: 24px;">
-    <?= Html::submitButton('<i class="bi bi-person-plus"></i> Criar Conta', ['class' => 'btn btn-primary', 'name' => 'register-button']) ?>
+    <?= Html::submitButton('<i class="bi bi-person-plus"></i> Create Account', ['class' => 'btn btn-primary', 'name' => 'register-button']) ?>
 </div>
 
 <?php ActiveForm::end(); ?>
 
 <div class="auth-links">
-    <p>Já tem conta? <a href="<?= Yii::$app->urlManager->createUrl(['/site/login']) ?>">Fazer login</a></p>
+    <p>Already have an account? <a href="<?= Yii::$app->urlManager->createUrl(['/site/login']) ?>">Login</a></p>
 </div>

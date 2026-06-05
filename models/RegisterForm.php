@@ -24,10 +24,10 @@ class RegisterForm extends Model
             [['username', 'email', 'password', 'password_confirm'], 'required'],
             ['username', 'string', 'min' => 3, 'max' => 150],
             ['email', 'email'],
-            ['email', 'unique', 'targetClass' => User::class, 'message' => 'Este email já está registado.'],
-            ['username', 'unique', 'targetClass' => User::class, 'message' => 'Este nome de utilizador já existe.'],
+            ['email', 'unique', 'targetClass' => User::class, 'message' => 'This email is already registered.'],
+            ['username', 'unique', 'targetClass' => User::class, 'message' => 'This username is already taken.'],
             ['password', 'string', 'min' => 6],
-            ['password_confirm', 'compare', 'compareAttribute' => 'password', 'message' => 'As passwords não coincidem.'],
+            ['password_confirm', 'compare', 'compareAttribute' => 'password', 'message' => 'Passwords do not match.'],
         ];
     }
 
@@ -37,10 +37,10 @@ class RegisterForm extends Model
     public function attributeLabels()
     {
         return [
-            'username' => 'Nome',
+            'username' => 'Name',
             'email' => 'Email',
             'password' => 'Password',
-            'password_confirm' => 'Confirmar Password',
+            'password_confirm' => 'Confirm Password',
         ];
     }
 

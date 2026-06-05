@@ -4,8 +4,11 @@ $params = require __DIR__ . '/params.php';
 $db = require __DIR__ . '/db.php';
 
 $config = [
-    'id' => 'basic-console',
+    'id' => 'url-shortener-console',
+    'name' => 'Url Shortener',
+    'language' => 'en-US',
     'basePath' => dirname(__DIR__),
+    'timeZone' => 'Europe/Lisbon',
     'bootstrap' => ['log'],
     'controllerNamespace' => 'app\commands',
     'aliases' => [

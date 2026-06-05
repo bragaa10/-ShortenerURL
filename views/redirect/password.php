@@ -3,14 +3,14 @@
 /** @var string $shortCode */
 /** @var string|null $error */
 
-$this->title = 'Link Protegido';
+$this->title = 'Protected Link';
 ?>
 <!DOCTYPE html>
-<html lang="pt-PT">
+<html lang="en-US">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Link Protegido — Encurtador URLs</title>
+    <title>Protected Link — URL Shortener</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
@@ -123,8 +123,8 @@ $this->title = 'Link Protegido';
 <body>
     <div class="card">
         <i class="bi bi-lock-fill icon"></i>
-        <h1>Link Protegido</h1>
-        <p>Este link requer uma password para acesso. Por favor introduza a password abaixo.</p>
+        <h1>Protected Link</h1>
+        <p>This link requires a password for access. Please enter the password below.</p>
 
         <?php if ($error): ?>
             <div class="error-msg"><i class="bi bi-exclamation-circle"></i> <?= htmlspecialchars($error) ?></div>
@@ -132,9 +132,9 @@ $this->title = 'Link Protegido';
 
         <form method="POST" action="">
             <input type="hidden" name="<?= Yii::$app->request->csrfParam ?>" value="<?= Yii::$app->request->csrfToken ?>">
-            <label for="pw_input">Password de Acesso</label>
-            <input type="password" id="pw_input" name="link_password" autofocus placeholder="Introduza a password...">
-            <button type="submit"><i class="bi bi-arrow-right-circle"></i> Aceder ao Link</button>
+            <label for="pw_input">Access Password</label>
+            <input type="password" id="pw_input" name="link_password" autofocus placeholder="Enter password...">
+            <button type="submit"><i class="bi bi-arrow-right-circle"></i> Access Link</button>
         </form>
     </div>
 </body>

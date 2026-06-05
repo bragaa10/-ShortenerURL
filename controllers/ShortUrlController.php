@@ -49,19 +49,13 @@ class ShortUrlController extends Controller
      */
     public function actionIndex()
     {
-        $searchModel = new ShortUrlSearch();
-        $userId = Yii::$app->user->identity->isAdmin() ? null : Yii::$app->user->id;
-
-        $query = ShortUrl::find();
-        if ($userId !== null) {
-            $query->andWhere(['user_id' => $userId]);
-        }
-
+        $searchModel = new \app\models\ShortUrlSearch();
         $dataProvider = $searchModel->search($this->request->queryParams);
-        if ($userId !== null) {
-            $dataProvider->query->andWhere(['short_url.user_id' => $userId]);
+
+        // Ensure users only see their own links if not admin
+        if (!Yii::$app->user->identity->isAdmin()) {
+            $dataProvider->query->andWhere(['short_url.user_id' => Yii::$app->user->id]);
         }
-        $dataProvider->sort = ['defaultOrder' => ['id' => SORT_DESC]];
 
         return $this->render('index', [
             'searchModel' => $searchModel,
@@ -109,11 +103,15 @@ class ShortUrlController extends Controller
                 }
                 
                 if ($model->save()) {
-                    // Store js: marker so the view always renders QR via JavaScript
-                    $model->qr_code_path = 'js:' . $model->getShortUrl();
+                    // Generate QR code with source tracking
+                    $qrUrl = $model->getShortUrl();
+                    $qrUrl .= (strpos($qrUrl, '?') === false ? '?' : '&') . 'source=qr';
+                    
+                    $generator = new QrCodeGenerator();
+                    $model->qr_code_path = $generator->generate($qrUrl, $model->id);
                     $model->save(false, ['qr_code_path']);
 
-                    Yii::$app->session->setFlash('success', 'Link curto criado com sucesso!');
+                    Yii::$app->session->setFlash('success', 'Short link created successfully!');
                     return $this->redirect(['view', 'id' => $model->id]);
                 }
             }
@@ -151,7 +149,7 @@ class ShortUrlController extends Controller
             }
             
             if ($model->save()) {
-                Yii::$app->session->setFlash('success', 'Link atualizado com sucesso.');
+                Yii::$app->session->setFlash('success', 'Link updated successfully.');
                 return $this->redirect(['view', 'id' => $model->id]);
             }
         }
@@ -242,6 +240,15 @@ class ShortUrlController extends Controller
             ->asArray()
             ->all();
 
+        // Source distribution (QR vs Click vs UTM)
+        $sources = ScanLog::find()
+            ->select(['source', 'cnt' => 'COUNT(*)'])
+            ->where(['short_url_id' => $model->id])
+            ->groupBy('source')
+            ->orderBy(['cnt' => SORT_DESC])
+            ->asArray()
+            ->all();
+
         // Recent scans
         $recentScans = ScanLog::find()
             ->where(['short_url_id' => $model->id])
@@ -258,6 +265,7 @@ class ShortUrlController extends Controller
             'browsers' => $browsers,
             'operatingSystems' => $operatingSystems,
             'referers' => $referers,
+            'sources' => $sources,
             'recentScans' => $recentScans,
         ]);
     }
@@ -274,11 +282,21 @@ class ShortUrlController extends Controller
     {
         $model = $this->findModel($id);
 
-        // Store the short URL as a marker so the view knows QR is "enabled"
-        $model->qr_code_path = 'js:' . $model->getShortUrl();
+        // Delete old QR if it exists
+        if (!empty($model->qr_code_path) && strpos($model->qr_code_path, 'js:') !== 0) {
+            $generator = new QrCodeGenerator();
+            $generator->delete($model->qr_code_path);
+        }
+
+        // Generate new QR code with source tracking
+        $qrUrl = $model->getShortUrl();
+        $qrUrl .= (strpos($qrUrl, '?') === false ? '?' : '&') . 'source=qr';
+
+        $generator = new QrCodeGenerator();
+        $model->qr_code_path = $generator->generate($qrUrl, $model->id);
         $model->save(false, ['qr_code_path']);
 
-        Yii::$app->session->setFlash('success', 'QR Code gerado com sucesso!');
+        Yii::$app->session->setFlash('success', 'QR Code generated successfully!');
         return $this->redirect(['view', 'id' => $model->id]);
     }
 
@@ -294,7 +312,20 @@ class ShortUrlController extends Controller
     public function actionDownloadQr($id)
     {
         $model = $this->findModel($id);
-        return $this->redirect(['view', 'id' => $model->id, 'download' => 'png']);
+        
+        if (empty($model->qr_code_path) || strpos($model->qr_code_path, 'js:') === 0) {
+            // Fallback: generate it now
+            $this->actionGenerateQr($id);
+            $model->refresh();
+        }
+
+        $filePath = Yii::getAlias('@webroot/' . $model->qr_code_path);
+        if (file_exists($filePath)) {
+            return Yii::$app->response->sendFile($filePath, "qrcode-{$model->short_code}.png");
+        }
+
+        Yii::$app->session->setFlash('error', 'QR Code file not found.');
+        return $this->redirect(['view', 'id' => $model->id]);
     }
 
     /**
@@ -307,7 +338,33 @@ class ShortUrlController extends Controller
     public function actionDownloadQrSvg($id)
     {
         $model = $this->findModel($id);
-        return $this->redirect(['view', 'id' => $model->id, 'download' => 'svg']);
+        
+        // Generate SVG on the fly using Endroid
+        if (class_exists('\Endroid\QrCode\QrCode')) {
+            $qrUrl = $model->getShortUrl();
+            $qrUrl .= (strpos($qrUrl, '?') === false ? '?' : '&') . 'source=qr';
+
+            $qrCode = new \Endroid\QrCode\QrCode(
+                data: $qrUrl,
+                encoding: new \Endroid\QrCode\Encoding\Encoding('UTF-8'),
+                errorCorrectionLevel: \Endroid\QrCode\ErrorCorrectionLevel::Low,
+                size: 600,
+                margin: 10,
+                roundBlockSizeMode: \Endroid\QrCode\RoundBlockSizeMode::Margin,
+            );
+
+            $writer = new \Endroid\QrCode\Writer\SvgWriter();
+            $result = $writer->write($qrCode);
+            
+            return Yii::$app->response->sendContentAsFile(
+                $result->getString(),
+                "qrcode-{$model->short_code}.svg",
+                ['mimeType' => 'image/svg+xml']
+            );
+        }
+
+        Yii::$app->session->setFlash('error', 'SVG generation not supported in this environment.');
+        return $this->redirect(['view', 'id' => $model->id]);
     }
 
     /**
@@ -328,7 +385,7 @@ class ShortUrlController extends Controller
         }
 
         $model->delete();
-        Yii::$app->session->setFlash('success', 'Link eliminado com sucesso.');
+        Yii::$app->session->setFlash('success', 'Link deleted successfully.');
 
         return $this->redirect(['index']);
     }

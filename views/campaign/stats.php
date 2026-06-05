@@ -13,15 +13,15 @@ use yii\helpers\Html;
 /** @var array $browsers */
 /** @var array $countries */
 
-$this->title = 'Estatísticas da Campanha: ' . $model->name;
-$this->params['breadcrumbs'][] = ['label' => 'Campanhas', 'url' => ['index']];
+$this->title = 'Campaign Statistics: ' . $model->name;
+$this->params['breadcrumbs'][] = ['label' => 'Campaigns', 'url' => ['index']];
 $this->params['breadcrumbs'][] = ['label' => $model->name, 'url' => ['view', 'id' => $model->id]];
-$this->params['breadcrumbs'][] = 'Estatísticas';
+$this->params['breadcrumbs'][] = 'Statistics';
 ?>
 
 <div class="page-header">
     <h1><i class="bi bi-bar-chart-steps"></i> <?= Html::encode($this->title) ?></h1>
-    <?= Html::a('<i class="bi bi-arrow-left"></i> Voltar', ['view', 'id' => $model->id], ['class' => 'btn btn-secondary']) ?>
+    <?= Html::a('<i class="bi bi-arrow-left"></i> Back', ['view', 'id' => $model->id], ['class' => 'btn btn-secondary']) ?>
 </div>
 
 <!-- Stats Summary -->
@@ -29,29 +29,29 @@ $this->params['breadcrumbs'][] = 'Estatísticas';
     <div class="stat-card">
         <div class="stat-icon primary"><i class="bi bi-cursor-fill"></i></div>
         <div class="stat-value"><?= number_format($totalScans) ?></div>
-        <div class="stat-label">Total de Scans</div>
+        <div class="stat-label">Total Scans</div>
     </div>
     <div class="stat-card">
         <div class="stat-icon secondary"><i class="bi bi-people-fill"></i></div>
         <div class="stat-value"><?= number_format($uniqueScans) ?></div>
-        <div class="stat-label">Visitantes Únicos</div>
+        <div class="stat-label">Unique Visitors</div>
     </div>
     <div class="stat-card">
         <div class="stat-icon success"><i class="bi bi-link-45deg"></i></div>
         <div class="stat-value"><?= count($model->shortUrls) ?></div>
-        <div class="stat-label">Links na Campanha</div>
+        <div class="stat-label">Links in Campaign</div>
     </div>
     <div class="stat-card">
         <div class="stat-icon danger"><i class="bi bi-calendar-check"></i></div>
         <div class="stat-value"><?= date('d/m/Y', $model->created_at) ?></div>
-        <div class="stat-label">Criada Em</div>
+        <div class="stat-label">Created At</div>
     </div>
 </div>
 
 <!-- Daily Chart -->
 <div class="data-card">
     <div class="data-card-header">
-        <h3><i class="bi bi-graph-up"></i> Scans Agregados — Últimos 30 dias</h3>
+        <h3><i class="bi bi-graph-up"></i> Aggregated Scans — Last 30 days</h3>
     </div>
     <div class="data-card-body">
         <div class="chart-container">
@@ -66,10 +66,10 @@ $this->params['breadcrumbs'][] = 'Estatísticas';
         <div class="data-card-header"><h3><i class="bi bi-award-fill"></i> Top Links (Performance)</h3></div>
         <div class="data-card-body" style="padding:0;">
             <table class="table" style="margin:0;">
-                <thead><tr><th>Link / Código</th><th>Scans</th></tr></thead>
+                <thead><tr><th>Link / Code</th><th>Scans</th></tr></thead>
                 <tbody>
                 <?php if (empty($topLinks)): ?>
-                    <tr><td colspan="2" style="text-align:center;color:var(--text-muted);padding:24px;">Sem links ativos</td></tr>
+                    <tr><td colspan="2" style="text-align:center;color:var(--text-muted);padding:24px;">No active links</td></tr>
                 <?php else: ?>
                     <?php foreach ($topLinks as $link): ?>
                     <tr>
@@ -88,13 +88,13 @@ $this->params['breadcrumbs'][] = 'Estatísticas';
 
     <!-- Countries -->
     <div class="data-card">
-        <div class="data-card-header"><h3><i class="bi bi-geo-alt-fill"></i> Distribuição Geográfica</h3></div>
+        <div class="data-card-header"><h3><i class="bi bi-geo-alt-fill"></i> Geographic Distribution</h3></div>
         <div class="data-card-body" style="padding:0;">
             <table class="table" style="margin:0;">
-                <thead><tr><th>País</th><th>Scans</th></tr></thead>
+                <thead><tr><th>Country</th><th>Scans</th></tr></thead>
                 <tbody>
                 <?php if (empty($countries)): ?>
-                    <tr><td colspan="2" style="text-align:center;color:var(--text-muted);padding:24px;">Sem dados</td></tr>
+                    <tr><td colspan="2" style="text-align:center;color:var(--text-muted);padding:24px;">No data</td></tr>
                 <?php else: ?>
                     <?php foreach ($countries as $c): ?>
                     <tr>
@@ -112,10 +112,10 @@ $this->params['breadcrumbs'][] = 'Estatísticas';
 <div class="grid-2">
     <!-- Devices -->
     <div class="data-card">
-        <div class="data-card-header"><h3><i class="bi bi-phone-fill"></i> Dispositivos</h3></div>
+        <div class="data-card-header"><h3><i class="bi bi-phone-fill"></i> Devices</h3></div>
         <div class="data-card-body">
             <?php if (empty($devices)): ?>
-                <p style="color:var(--text-muted);text-align:center;padding:20px;">Sem dados</p>
+                <p style="color:var(--text-muted);text-align:center;padding:20px;">No data</p>
             <?php else: ?>
                 <div class="chart-container" style="max-height:220px"><canvas id="devChart"></canvas></div>
             <?php endif; ?>
@@ -127,7 +127,7 @@ $this->params['breadcrumbs'][] = 'Estatísticas';
         <div class="data-card-header"><h3><i class="bi bi-globe2"></i> Browsers</h3></div>
         <div class="data-card-body">
             <?php if (empty($browsers)): ?>
-                <p style="color:var(--text-muted);text-align:center;padding:20px;">Sem dados</p>
+                <p style="color:var(--text-muted);text-align:center;padding:20px;">No data</p>
             <?php else: ?>
                 <div class="chart-container" style="max-height:220px"><canvas id="brChart"></canvas></div>
             <?php endif; ?>

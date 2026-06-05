@@ -104,7 +104,7 @@ class SiteController extends Controller
             $user = $model->register();
             if ($user !== null) {
                 Yii::$app->user->login($user);
-                Yii::$app->session->setFlash('success', 'Conta criada com sucesso! Bem-vindo.');
+                Yii::$app->session->setFlash('success', 'Account created successfully! Welcome.');
                 return $this->redirect(['/dashboard/index']);
             }
         }
@@ -132,7 +132,7 @@ class SiteController extends Controller
             if ($token) {
                 $resetLink = Yii::$app->urlManager->createAbsoluteUrl(['/site/reset-password', 'token' => $token]);
             }
-            Yii::$app->session->setFlash('success', 'Se o email existir, receberá um link de redefinição.');
+            Yii::$app->session->setFlash('success', 'If the email exists, you will receive a reset link.');
         }
 
         return $this->render('forgot-password', [
@@ -158,7 +158,7 @@ class SiteController extends Controller
         }
 
         if ($model->load(Yii::$app->request->post()) && $model->resetPassword()) {
-            Yii::$app->session->setFlash('success', 'Password redefinida com sucesso! Pode fazer login agora.');
+            Yii::$app->session->setFlash('success', 'Password reset successfully! You can login now.');
             return $this->redirect(['/site/login']);
         }
 
@@ -174,7 +174,7 @@ class SiteController extends Controller
         $model = new ProfileForm($user);
 
         if ($model->load(Yii::$app->request->post()) && $model->save()) {
-            Yii::$app->session->setFlash('success', 'Perfil atualizado com sucesso.');
+            Yii::$app->session->setFlash('success', 'Profile updated successfully.');
             return $this->refresh();
         }
 

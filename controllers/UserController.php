@@ -35,7 +35,7 @@ class UserController extends Controller
                     ],
                 ],
                 'denyCallback' => function () {
-                    throw new ForbiddenHttpException('Acesso restrito a administradores.');
+                    throw new ForbiddenHttpException('Access restricted to administrators.');
                 },
             ],
             'verbs' => [
@@ -78,12 +78,12 @@ class UserController extends Controller
         if ($this->request->isPost && $model->load($this->request->post())) {
             $plainPassword = $this->request->post('plain_password', '');
             if (empty($plainPassword) || strlen($plainPassword) < 6) {
-                $model->addError('password_hash', 'A password deve ter pelo menos 6 caracteres.');
+                $model->addError('password_hash', 'Password must be at least 6 characters.');
             } else {
                 $model->setPassword($plainPassword);
                 $model->generateAuthKey();
                 if ($model->save()) {
-                    Yii::$app->session->setFlash('success', 'Utilizador criado com sucesso.');
+                    Yii::$app->session->setFlash('success', 'User created successfully.');
                     return $this->redirect(['view', 'id' => $model->id]);
                 }
             }
@@ -105,7 +105,7 @@ class UserController extends Controller
 
         // Prevent admin from deactivating their own account
         if ($model->id === Yii::$app->user->id) {
-            Yii::$app->session->setFlash('error', 'Não pode desativar a sua própria conta.');
+            Yii::$app->session->setFlash('error', 'You cannot deactivate your own account.');
             return $this->redirect(['view', 'id' => $id]);
         }
 
@@ -115,7 +115,7 @@ class UserController extends Controller
         $model->save(false, ['status']);
 
         $label = $model->status == User::STATUS_ACTIVE ? 'ativado' : 'desativado';
-        Yii::$app->session->setFlash('success', "Utilizador {$label} com sucesso.");
+        Yii::$app->session->setFlash('success', "User updated successfully.");
         return $this->redirect(['view', 'id' => $id]);
     }
 
@@ -141,7 +141,7 @@ class UserController extends Controller
         $model = $this->findModel($id);
 
         if ($this->request->isPost && $model->load($this->request->post()) && $model->save()) {
-            Yii::$app->session->setFlash('success', 'Utilizador atualizado.');
+            Yii::$app->session->setFlash('success', 'User updated.');
             return $this->redirect(['view', 'id' => $model->id]);
         }
 
@@ -161,6 +161,6 @@ class UserController extends Controller
         if (($model = User::findOne(['id' => $id])) !== null) {
             return $model;
         }
-        throw new NotFoundHttpException('O utilizador não existe.');
+        throw new NotFoundHttpException('The user does not exist.');
     }
 }

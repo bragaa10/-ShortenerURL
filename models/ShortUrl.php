@@ -78,6 +78,7 @@ class ShortUrl extends ActiveRecord
             [['short_code'], 'string', 'max' => 50],
             [['qr_code_path', 'password_hash', 'tags'], 'string', 'max' => 255],
             [['short_code'], 'unique'],
+            [['short_code'], 'match', 'pattern' => '/^[a-zA-Z0-9-]+$/', 'message' => 'Short code can only contain letters, numbers, and dashes (-).'],
             // Virtual field: plain-text password (never stored directly)
             [['link_password'], 'string', 'min' => 4, 'max' => 100],
             [['link_password'], 'safe'],
@@ -112,20 +113,20 @@ class ShortUrl extends ActiveRecord
     {
         return [
             'id' => 'ID',
-            'user_id' => 'Utilizador',
-            'campaign_id' => 'Campanha',
-            'title' => 'Título',
-            'original_url' => 'URL Original',
-            'short_code' => 'Código Curto',
+            'user_id' => 'User',
+            'campaign_id' => 'Campaign',
+            'title' => 'Title',
+            'original_url' => 'Original URL',
+            'short_code' => 'Short Code',
             'qr_code_path' => 'QR Code',
-            'status' => 'Estado',
-            'expires_at' => 'Expira Em',
-            'password_protected' => 'Protegido por Password',
+            'status' => 'Status',
+            'expires_at' => 'Expires At',
+            'password_protected' => 'Password Protected',
             'password_hash' => 'Password',
-            'notes' => 'Notas',
-            'tags' => 'Tags (separadas por vírgula)',
-            'created_at' => 'Criado Em',
-            'updated_at' => 'Atualizado Em',
+            'notes' => 'Notes',
+            'tags' => 'Tags (comma separated)',
+            'created_at' => 'Created At',
+            'updated_at' => 'Updated At',
         ];
     }
 
@@ -142,7 +143,7 @@ class ShortUrl extends ActiveRecord
         if (!empty($this->expires_at) && !is_numeric($this->expires_at)) {
             $timestamp = strtotime($this->expires_at);
             if ($timestamp === false) {
-                $this->addError('expires_at', 'Formato de data inválido.');
+                $this->addError('expires_at', 'Invalid date format.');
                 return false;
             }
             $this->expires_at = $timestamp;
@@ -251,13 +252,13 @@ class ShortUrl extends ActiveRecord
     public function getStatusLabel()
     {
         if ($this->isExpired()) {
-            return 'Expirado';
+            return 'Expired';
         }
         $statuses = [
-            self::STATUS_INACTIVE => 'Inativo',
-            self::STATUS_ACTIVE => 'Ativo',
+            self::STATUS_INACTIVE => 'Inactive',
+            self::STATUS_ACTIVE => 'Active',
         ];
-        return $statuses[$this->status] ?? 'Desconhecido';
+        return $statuses[$this->status] ?? 'Unknown';
     }
 
     /**
@@ -280,7 +281,7 @@ class ShortUrl extends ActiveRecord
      */
     public function getShortUrl()
     {
-        $baseUrl = Yii::$app->params['baseUrl'] ?? Yii::$app->request->hostInfo;
+        $baseUrl = Yii::$app->params['baseUrl'] ?: Yii::$app->request->hostInfo;
         return rtrim($baseUrl, '/') . '/' . $this->short_code;
     }
 

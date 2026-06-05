@@ -8,24 +8,25 @@ use yii\grid\GridView;
 /** @var app\models\CampaignSearch $searchModel */
 /** @var yii\data\ActiveDataProvider $dataProvider */
 
-$this->title = 'Campanhas';
+$this->title = 'Campaigns';
 ?>
 
 <div class="page-header">
-    <h1><i class="bi bi-megaphone-fill"></i> Campanhas</h1>
-    <?= Html::a('<i class="bi bi-plus-lg"></i> Nova Campanha', ['create'], ['class' => 'btn btn-primary']) ?>
+    <h1><i class="bi bi-megaphone-fill"></i> Campaigns</h1>
+    <?= Html::a('<i class="bi bi-plus-lg"></i> New Campaign', ['create'], ['class' => 'btn btn-primary']) ?>
 </div>
 
 <div class="data-card">
     <div class="data-card-body" style="padding: 0;">
         <?= GridView::widget([
             'dataProvider' => $dataProvider,
-            'filterModel' => $searchModel,
             'tableOptions' => ['class' => 'table'],
             'columns' => [
                 'name',
                 [
                     'attribute' => 'description',
+                    'headerOptions' => ['class' => 'd-none d-md-table-cell'],
+                    'contentOptions' => ['class' => 'd-none d-md-table-cell'],
                     'value' => function ($model) {
                         $desc = $model->description ?: '—';
                         return strlen($desc) > 60 ? substr($desc, 0, 60) . '...' : $desc;
@@ -33,32 +34,35 @@ $this->title = 'Campanhas';
                 ],
                 [
                     'label' => 'Links',
+                    'headerOptions' => ['class' => 'd-none d-sm-table-cell', 'style' => 'text-align:center'],
+                    'contentOptions' => ['class' => 'd-none d-sm-table-cell', 'style' => 'text-align:center'],
                     'value' => function ($model) {
                         return count($model->shortUrls);
                     },
-                    'contentOptions' => ['style' => 'text-align:center'],
-                    'headerOptions' => ['style' => 'text-align:center'],
                 ],
                 [
                     'label' => 'Scans',
+                    'headerOptions' => ['class' => 'd-none d-sm-table-cell', 'style' => 'text-align:center'],
+                    'contentOptions' => ['class' => 'd-none d-sm-table-cell', 'style' => 'text-align:center'],
                     'value' => function ($model) {
                         return '<strong>' . number_format($model->getTotalScans()) . '</strong>';
                     },
                     'format' => 'raw',
-                    'contentOptions' => ['style' => 'text-align:center'],
-                    'headerOptions' => ['style' => 'text-align:center'],
                 ],
                 [
                     'attribute' => 'status',
+                    'headerOptions' => ['class' => 'd-none d-md-table-cell'],
+                    'contentOptions' => ['class' => 'd-none d-md-table-cell'],
                     'value' => function ($model) {
                         $class = $model->status == Campaign::STATUS_ACTIVE ? 'badge-success' : 'badge-danger';
                         return '<span class="badge ' . $class . '">' . $model->getStatusLabel() . '</span>';
                     },
                     'format' => 'raw',
-                    'filter' => [1 => 'Ativa', 0 => 'Inativa'],
                 ],
                 [
                     'attribute' => 'created_at',
+                    'headerOptions' => ['class' => 'd-none d-lg-table-cell'],
+                    'contentOptions' => ['class' => 'd-none d-lg-table-cell'],
                     'value' => function ($model) { return date('d/m/Y', $model->created_at); },
                     'filter' => false,
                 ],
@@ -75,7 +79,7 @@ $this->title = 'Campanhas';
                         'delete' => function ($url, $model) {
                             return Html::a('<i class="bi bi-trash"></i>', ['delete', 'id' => $model->id], [
                                 'class' => 'btn btn-sm btn-danger',
-                                'data' => ['confirm' => 'Tem a certeza?', 'method' => 'post'],
+                                'data' => ['confirm' => 'Are you sure?', 'method' => 'post'],
                             ]);
                         },
                     ],

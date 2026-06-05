@@ -16,20 +16,20 @@ $isCreate = $isCreate ?? $model->isNewRecord;
 
         <?php $form = ActiveForm::begin(); ?>
 
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
-            <?= $form->field($model, 'username')->textInput(['maxlength' => true, 'placeholder' => 'Nome do utilizador']) ?>
-            <?= $form->field($model, 'email')->textInput(['maxlength' => true, 'placeholder' => 'seu@email.com']) ?>
+        <div class="form-row">
+            <?= $form->field($model, 'username')->textInput(['maxlength' => true, 'placeholder' => 'Username']) ?>
+            <?= $form->field($model, 'email')->textInput(['maxlength' => true, 'placeholder' => 'your@email.com']) ?>
         </div>
 
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+        <div class="form-row">
             <?= $form->field($model, 'role')->dropDownList([
-                User::ROLE_USER => 'Cliente',
+                User::ROLE_USER => 'User',
                 User::ROLE_ADMIN => 'Admin',
             ]) ?>
 
             <?= $form->field($model, 'status')->dropDownList([
-                User::STATUS_ACTIVE => 'Ativo',
-                User::STATUS_INACTIVE => 'Inativo',
+                User::STATUS_ACTIVE => 'Active',
+                User::STATUS_INACTIVE => 'Inactive',
             ]) ?>
         </div>
 
@@ -40,7 +40,7 @@ $isCreate = $isCreate ?? $model->isNewRecord;
                 Password <span style="color:var(--accent-danger)">*</span>
             </label>
             <input type="password" id="plain_password" name="plain_password"
-                class="form-control" placeholder="Mínimo 6 caracteres" autocomplete="new-password">
+                class="form-control" placeholder="Minimum 6 characters" autocomplete="new-password">
             <?php if ($model->hasErrors('password_hash')): ?>
                 <div class="help-block"><?= Html::encode($model->getFirstError('password_hash')) ?></div>
             <?php endif; ?>
@@ -50,11 +50,11 @@ $isCreate = $isCreate ?? $model->isNewRecord;
         <div class="form-group" style="margin-top: 24px;">
             <?= Html::submitButton(
                 $isCreate
-                    ? '<i class="bi bi-person-plus"></i> Criar Utilizador'
-                    : '<i class="bi bi-check-lg"></i> Guardar Alterações',
+                    ? '<i class="bi bi-person-plus"></i> Create User'
+                    : '<i class="bi bi-check-lg"></i> Save Changes',
                 ['class' => 'btn btn-primary']
             ) ?>
-            <?= Html::a('Cancelar', ['index'], ['class' => 'btn btn-secondary', 'style' => 'margin-left: 8px;']) ?>
+            <?= Html::a('Cancel', ['index'], ['class' => 'btn btn-secondary', 'style' => 'margin-left: 8px;']) ?>
         </div>
 
         <?php ActiveForm::end(); ?>

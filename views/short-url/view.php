@@ -22,11 +22,11 @@ $downloadMode  = Yii::$app->request->get('download', '');
 <div class="page-header">
     <h1><i class="bi bi-link-45deg"></i> <?= Html::encode($this->title) ?></h1>
     <div>
-        <?= Html::a('<i class="bi bi-bar-chart-fill"></i> Estatísticas', ['stats', 'id' => $model->id], ['class' => 'btn btn-outline-primary']) ?>
-        <?= Html::a('<i class="bi bi-pencil"></i> Editar', ['update', 'id' => $model->id], ['class' => 'btn btn-secondary']) ?>
-        <?= Html::a('<i class="bi bi-trash"></i> Eliminar', ['delete', 'id' => $model->id], [
+        <?= Html::a('<i class="bi bi-bar-chart-fill"></i> Statistics', ['stats', 'id' => $model->id], ['class' => 'btn btn-outline-primary']) ?>
+        <?= Html::a('<i class="bi bi-pencil"></i> Edit', ['update', 'id' => $model->id], ['class' => 'btn btn-secondary']) ?>
+        <?= Html::a('<i class="bi bi-trash"></i> Delete', ['delete', 'id' => $model->id], [
             'class' => 'btn btn-danger',
-            'data'  => ['confirm' => 'Tem a certeza?', 'method' => 'post'],
+            'data'  => ['confirm' => 'Are you sure?', 'method' => 'post'],
         ]) ?>
     </div>
 </div>
@@ -35,23 +35,23 @@ $downloadMode  = Yii::$app->request->get('download', '');
     <!-- Link Details -->
     <div class="data-card">
         <div class="data-card-header">
-            <h3>Detalhes do Link</h3>
+            <h3>Link Details</h3>
         </div>
         <div class="data-card-body">
             <table class="table detail-view">
                 <tr>
-                    <th>URL Curto</th>
+                    <th>Short URL</th>
                     <td>
                         <div class="short-url-display">
                             <code id="shortUrl"><?= Html::encode($model->getShortUrl()) ?></code>
-                            <button class="btn-copy" onclick="copyUrl()" title="Copiar">
+                            <button class="btn-copy" onclick="copyUrl()" title="Copy">
                                 <i class="bi bi-clipboard"></i>
                             </button>
                         </div>
                     </td>
                 </tr>
                 <tr>
-                    <th>URL Original</th>
+                    <th>Original URL</th>
                     <td>
                         <a href="<?= Html::encode($model->original_url) ?>" target="_blank" style="word-break: break-all;">
                             <?= Html::encode($model->original_url) ?>
@@ -60,28 +60,28 @@ $downloadMode  = Yii::$app->request->get('download', '');
                     </td>
                 </tr>
                 <tr>
-                    <th>Estado</th>
+                    <th>Status</th>
                     <td><span class="badge <?= $model->getStatusBadgeClass() ?>"><?= $model->getStatusLabel() ?></span></td>
                 </tr>
                 <tr>
-                    <th>Campanha</th>
+                    <th>Campaign</th>
                     <td><?= $model->campaign ? Html::encode($model->campaign->name) : '<span style="color:var(--text-muted)">—</span>' ?></td>
                 </tr>
                 <tr>
                     <th>Total Scans</th>
-                    <td><strong><?= number_format($model->getTotalScans()) ?></strong> (<?= number_format($model->getUniqueScans()) ?> únicos)</td>
+                    <td><strong><?= number_format($model->getTotalScans()) ?></strong> (<?= number_format($model->getUniqueScans()) ?> unique)</td>
                 </tr>
                 <tr>
-                    <th>Expira Em</th>
-                    <td><?= $model->expires_at ? date('d/m/Y H:i', $model->expires_at) : '<span style="color:var(--text-muted)">Nunca</span>' ?></td>
+                    <th>Expires At</th>
+                    <td><?= $model->expires_at ? date('d/m/Y H:i', $model->expires_at) : '<span style="color:var(--text-muted)">Never</span>' ?></td>
                 </tr>
                 <tr>
-                    <th>Criado Em</th>
+                    <th>Created At</th>
                     <td><?= date('d/m/Y H:i', $model->created_at) ?></td>
                 </tr>
                 <?php if ($model->notes): ?>
                 <tr>
-                    <th>Notas</th>
+                    <th>Notes</th>
                     <td><?= Html::encode($model->notes) ?></td>
                 </tr>
                 <?php endif; ?>
@@ -89,7 +89,7 @@ $downloadMode  = Yii::$app->request->get('download', '');
         </div>
     </div>
 
-    <!-- QR Code (rendered 100% client-side) -->
+    <!-- QR Code -->
     <div class="data-card">
         <div class="data-card-header">
             <h3>QR Code</h3>
@@ -108,7 +108,7 @@ $downloadMode  = Yii::$app->request->get('download', '');
             </div>
             <p style="margin-top:14px; font-size:12px; color:var(--text-muted);">
                 <i class="bi bi-info-circle"></i>
-                Aponte a câmara para o código QR para aceder ao link curto.
+                Point your camera at the QR code to access the short link.
             </p>
         </div>
     </div>
@@ -146,7 +146,7 @@ function getQrCanvas() {
 function downloadQR(format) {
     var canvas = getQrCanvas();
     if (!canvas) {
-        alert('QR Code ainda a carregar. Tente novamente em instantes.');
+        alert('QR Code still loading. Try again in a moment.');
         return;
     }
 

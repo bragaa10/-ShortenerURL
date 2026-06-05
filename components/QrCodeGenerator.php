@@ -42,14 +42,33 @@ class QrCodeGenerator extends Component
      */
     public function generate($url, $shortUrlId)
     {
-        // Ultimate reliability: Use Google API directly as a string
-        // This avoids any issues with folders, permissions or missing libraries
+        $fileName = 'qr_' . $shortUrlId . '_' . time() . '.png';
+        $relativePath = $this->savePath . '/' . $fileName;
+        $absolutePath = Yii::getAlias('@webroot/' . $relativePath);
+
+        // Ensure directory exists
+        $dir = dirname($absolutePath);
+        if (!is_dir($dir)) {
+            @mkdir($dir, 0777, true);
+        }
+
+        // Try Endroid first
+        if ($this->generateWithEndroid($url, $absolutePath)) {
+            return $relativePath;
+        }
+
+        // Try Google Charts next (saves to file)
+        if ($this->generateWithGoogleCharts($url, $absolutePath)) {
+            return $relativePath;
+        }
+
+        // Ultimate fallback: Just return the Google Charts URL as a string
         $encodedUrl = urlencode($url);
         return "https://chart.googleapis.com/chart?chs={$this->size}x{$this->size}&cht=qr&chl={$encodedUrl}&choe=UTF-8";
     }
 
     /**
-     * Generates QR code using endroid/qr-code library.
+     * Generates QR code using endroid/qr-code library (v6+).
      *
      * @param string $url
      * @param string $absolutePath
@@ -57,19 +76,21 @@ class QrCodeGenerator extends Component
      */
     protected function generateWithEndroid($url, $absolutePath)
     {
-        // endroid/qr-code v4+
         if (class_exists('\Endroid\QrCode\QrCode')) {
             try {
-                $qrCode = new \Endroid\QrCode\QrCode($url);
-                $qrCode->setSize($this->size);
-                $qrCode->setMargin($this->margin);
+                $qrCode = new \Endroid\QrCode\QrCode(
+                    data: $url,
+                    encoding: new \Endroid\QrCode\Encoding\Encoding('UTF-8'),
+                    errorCorrectionLevel: \Endroid\QrCode\ErrorCorrectionLevel::Low,
+                    size: $this->size,
+                    margin: $this->margin,
+                    roundBlockSizeMode: \Endroid\QrCode\RoundBlockSizeMode::Margin,
+                );
 
-                if (class_exists('\Endroid\QrCode\Writer\PngWriter')) {
-                    $writer = new \Endroid\QrCode\Writer\PngWriter();
-                    $result = $writer->write($qrCode);
-                    $result->saveToFile($absolutePath);
-                    return true;
-                }
+                $writer = new \Endroid\QrCode\Writer\PngWriter();
+                $result = $writer->write($qrCode);
+                $result->saveToFile($absolutePath);
+                return true;
             } catch (\Exception $e) {
                 Yii::warning("Endroid QR generation failed: " . $e->getMessage(), __METHOD__);
             }

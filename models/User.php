@@ -88,19 +88,19 @@ class User extends ActiveRecord implements IdentityInterface
     {
         return [
             'id' => 'ID',
-            'username' => 'Nome',
+            'username' => 'Username',
             'email' => 'Email',
             'password_hash' => 'Password',
             'auth_key' => 'Auth Key',
-            'password_reset_token' => 'Token de Reset',
-            'status' => 'Estado',
-            'role' => 'Perfil',
-            'profile_bio' => 'Biografia',
-            'profile_company' => 'Empresa',
+            'password_reset_token' => 'Reset Token',
+            'status' => 'Status',
+            'role' => 'Role',
+            'profile_bio' => 'Bio',
+            'profile_company' => 'Company',
             'profile_website' => 'Website',
-            'created_at' => 'Criado Em',
-            'updated_at' => 'Atualizado Em',
-            'last_login_at' => 'Último Login',
+            'created_at' => 'Created At',
+            'updated_at' => 'Updated At',
+            'last_login_at' => 'Last Login',
         ];
     }
 
@@ -227,10 +227,10 @@ class User extends ActiveRecord implements IdentityInterface
     public function getStatusLabel()
     {
         $statuses = [
-            self::STATUS_INACTIVE => 'Inativo',
-            self::STATUS_ACTIVE => 'Ativo',
+            self::STATUS_INACTIVE => 'Inactive',
+            self::STATUS_ACTIVE => 'Active',
         ];
-        return $statuses[$this->status] ?? 'Desconhecido';
+        return $statuses[$this->status] ?? 'Unknown';
     }
 
     /**
@@ -239,10 +239,10 @@ class User extends ActiveRecord implements IdentityInterface
     public function getRoleLabel()
     {
         $roles = [
-            self::ROLE_USER => 'Cliente',
+            self::ROLE_USER => 'User',
             self::ROLE_ADMIN => 'Admin',
         ];
-        return $roles[$this->role] ?? 'Desconhecido';
+        return $roles[$this->role] ?? 'Unknown';
     }
 
     // ========== Relations ==========

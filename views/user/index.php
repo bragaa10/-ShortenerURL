@@ -7,53 +7,60 @@ use yii\grid\GridView;
 /** @var app\models\UserSearch $searchModel */
 /** @var yii\data\ActiveDataProvider $dataProvider */
 
-$this->title = 'Utilizadores';
+$this->title = 'Users';
 ?>
 
 <div class="page-header">
-    <h1><i class="bi bi-people-fill"></i> Utilizadores</h1>
-    <?= yii\helpers\Html::a('<i class="bi bi-person-plus"></i> Novo Utilizador', ['create'], ['class' => 'btn btn-primary']) ?>
+    <h1><i class="bi bi-people-fill"></i> Users</h1>
+    <?= yii\helpers\Html::a('<i class="bi bi-person-plus"></i> New User', ['create'], ['class' => 'btn btn-primary']) ?>
 </div>
 
 <div class="data-card">
     <div class="data-card-body" style="padding: 0;">
         <?= GridView::widget([
             'dataProvider' => $dataProvider,
-            'filterModel' => $searchModel,
             'tableOptions' => ['class' => 'table'],
             'columns' => [
                 'username',
-                'email:email',
+                [
+                    'attribute' => 'email',
+                    'format' => 'email',
+                    'headerOptions' => ['class' => 'd-none d-sm-table-cell'],
+                    'contentOptions' => ['class' => 'd-none d-sm-table-cell'],
+                ],
                 [
                     'attribute' => 'role',
+                    'headerOptions' => ['class' => 'd-none d-md-table-cell'],
+                    'contentOptions' => ['class' => 'd-none d-md-table-cell'],
                     'value' => function ($model) {
                         $class = $model->role === 'admin' ? 'badge-warning' : 'badge-info';
                         return '<span class="badge ' . $class . '">' . $model->getRoleLabel() . '</span>';
                     },
                     'format' => 'raw',
-                    'filter' => ['user' => 'Cliente', 'admin' => 'Admin'],
                 ],
                 [
                     'attribute' => 'status',
+                    'headerOptions' => ['class' => 'd-none d-md-table-cell'],
+                    'contentOptions' => ['class' => 'd-none d-md-table-cell'],
                     'value' => function ($model) {
                         $class = $model->status == 10 ? 'badge-success' : 'badge-danger';
                         return '<span class="badge ' . $class . '">' . $model->getStatusLabel() . '</span>';
                     },
                     'format' => 'raw',
-                    'filter' => [10 => 'Ativo', 0 => 'Inativo'],
                 ],
                 [
-                    'attribute' => 'created_at',
+                    'headerOptions' => ['class' => 'd-none d-lg-table-cell'],
+                    'contentOptions' => ['class' => 'd-none d-lg-table-cell'],
                     'value' => function ($model) { return date('d/m/Y', $model->created_at); },
-                    'filter' => false,
                 ],
                 [
                     'attribute' => 'last_login_at',
-                    'label' => 'Último Login',
+                    'label' => 'Last Login',
+                    'headerOptions' => ['class' => 'd-none d-lg-table-cell'],
+                    'contentOptions' => ['class' => 'd-none d-lg-table-cell'],
                     'value' => function ($model) {
                         return $model->last_login_at ? date('d/m/Y H:i', $model->last_login_at) : '—';
                     },
-                    'filter' => false,
                 ],
                 [
                     'class' => 'yii\grid\ActionColumn',
@@ -72,7 +79,7 @@ $this->title = 'Utilizadores';
                             return yii\helpers\Html::a($icon, ['toggle-status', 'id' => $model->id], [
                                 'class' => $class,
                                 'data-method' => 'post',
-                                'title' => $model->status == 10 ? 'Desativar' : 'Ativar',
+                                'title' => $model->status == 10 ? 'Deactivate' : 'Activate',
                             ]);
                         },
                     ],

@@ -13,49 +13,49 @@ use app\models\Campaign;
 <div class="data-card">
     <div class="data-card-body">
 
-        <?php $form = ActiveForm::begin(); ?>
+        <?php $form = ActiveForm::begin(['id' => 'short-url-form']); ?>
 
         <?= $form->field($model, 'original_url')->textInput([
-            'placeholder' => 'https://exemplo.com/pagina-muito-longa',
+            'placeholder' => 'https://example.com/very-long-page',
             'maxlength' => true,
-        ])->label('URL Original *') ?>
+        ])->label('Original URL *') ?>
 
         <?= $form->field($model, 'title')->textInput([
-            'placeholder' => 'Ex: Promoção de Verão',
+            'placeholder' => 'Ex: Summer Promotion',
             'maxlength' => true,
         ]) ?>
 
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+        <div class="form-row">
             <?= $form->field($model, 'short_code')->textInput([
-                'placeholder' => 'Deixe vazio para gerar automaticamente',
+                'placeholder' => 'Leave empty to generate automatically',
                 'maxlength' => true,
-            ])->hint('Código personalizado (opcional)') ?>
+            ])->hint('Custom code (optional)') ?>
 
             <?= $form->field($model, 'campaign_id')->dropDownList(
                 $campaigns ?? [],
-                ['prompt' => '— Sem campanha —']
+                ['prompt' => '— No campaign —']
             ) ?>
         </div>
 
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+        <div class="form-row">
             <?= $form->field($model, 'status')->dropDownList([
-                1 => 'Ativo',
-                0 => 'Inativo',
+                1 => 'Active',
+                0 => 'Inactive',
             ]) ?>
 
             <?= $form->field($model, 'expires_at')->textInput([
                 'type' => 'date',
                 'value' => $model->expires_at ? (is_numeric($model->expires_at) ? date('Y-m-d', $model->expires_at) : $model->expires_at) : '',
-            ])->hint('Deixe vazio para não expirar') ?>
+            ])->hint('Leave empty for no expiration') ?>
         </div>
 
         <?= $form->field($model, 'notes')->textarea([
             'rows' => 3,
-            'placeholder' => 'Notas internas (opcional)',
+            'placeholder' => 'Internal notes (optional)',
         ]) ?>
 
         <?= $form->field($model, 'tags')->textInput([
-            'placeholder' => 'Ex: verão, promo, social-media (separadas por vírgula)',
+            'placeholder' => 'Ex: summer, promo, social-media (comma separated)',
         ]) ?>
 
         <!-- Password Protection -->
@@ -70,33 +70,40 @@ use app\models\Campaign;
                         style="width:18px; height:18px; accent-color: var(--accent-primary); cursor:pointer;">
                     <label for="pw_toggle" style="margin:0; cursor:pointer; font-size:14px; color:var(--text-primary);">
                         <i class="bi bi-lock-fill" style="color:var(--accent-warning);"></i>
-                        Proteger este link com password
+                        Protect this link with password
                     </label>
                 </div>
                 <p style="font-size:12px; color:var(--text-muted); margin: 0 0 12px 28px;">
-                    Visitantes terão de introduzir a password antes de serem redirecionados.
+                    Visitors will have to enter the password before being redirected.
                 </p>
                 <div id="pw_field" style="display: <?= $model->password_protected ? 'block' : 'none' ?>; margin-left: 28px;">
                     <?= $form->field($model, 'link_password')->passwordInput([
-                        'placeholder' => $model->password_protected ? '(manter password atual — deixe vazio)' : 'Mínimo 4 caracteres',
+                        'placeholder' => $model->password_protected ? '(keep current password — leave empty)' : 'Minimum 4 characters',
                         'autocomplete' => 'new-password',
-                    ])->label('Password de Acesso') ?>
+                    ])->label('Access Password') ?>
                 </div>
             </div>
         </div>
 
         <div class="form-group" style="margin-top: 24px;">
-            <?= Html::submitButton(
-                $model->isNewRecord ? '<i class="bi bi-plus-lg"></i> Criar Link' : '<i class="bi bi-check-lg"></i> Guardar',
-                ['class' => 'btn btn-primary']
-            ) ?>
-            <?= Html::a('Cancelar', ['index'], ['class' => 'btn btn-secondary', 'style' => 'margin-left: 8px;']) ?>
+            <?= Html::submitButton($model->isNewRecord ? '<i class="bi bi-plus-lg"></i> Create Link' : '<i class="bi bi-check-lg"></i> Save', ['class' => 'btn btn-primary']) ?>
+            <?= Html::a('Cancel', ['index'], ['class' => 'btn btn-secondary', 'style' => 'margin-left: 8px;']) ?>
         </div>
 
         <?php ActiveForm::end(); ?>
 
     </div>
 </div>
+
+<?php
+$js = <<<JS
+// Password toggle
+window.togglePasswordField = function(checkbox) {
+    document.getElementById('pw_field').style.display = checkbox.checked ? 'block' : 'none';
+};
+JS;
+$this->registerJs($js);
+?>
 
 <script>
 function togglePasswordField(checkbox) {

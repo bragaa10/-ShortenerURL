@@ -39,7 +39,7 @@ class LoginForm extends Model
         return [
             'email' => 'Email',
             'password' => 'Password',
-            'rememberMe' => 'Lembrar-me',
+            'rememberMe' => 'Remember me',
         ];
     }
 
@@ -56,7 +56,7 @@ class LoginForm extends Model
             $user = $this->getUser();
 
             if (!$user || !$user->validatePassword($this->password)) {
-                $this->addError($attribute, 'Email ou password incorretos.');
+                $this->addError($attribute, 'Incorrect email or password.');
             }
         }
     }

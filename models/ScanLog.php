@@ -47,13 +47,13 @@ class ScanLog extends \yii\db\ActiveRecord
     public function rules()
     {
         return [
-            [['ip_address', 'user_agent', 'referer', 'source', 'country', 'city', 'device_type', 'os', 'browser', 'language', 'utm_source', 'utm_medium', 'utm_campaign', 'utm_term', 'utm_content'], 'default', 'value' => null],
+            [['ip_address', 'user_agent', 'referer', 'source', 'country', 'country_code', 'city', 'device_type', 'os', 'browser', 'language', 'utm_source', 'utm_medium', 'utm_campaign', 'utm_term', 'utm_content'], 'default', 'value' => null],
             [['short_url_id', 'accessed_at', 'created_at'], 'required'],
             [['short_url_id', 'accessed_at', 'created_at'], 'integer'],
             [['user_agent', 'referer'], 'string'],
             [['ip_address'], 'string', 'max' => 45],
             [['source', 'device_type'], 'string', 'max' => 50],
-            [['country', 'city', 'os', 'browser', 'utm_source', 'utm_medium', 'utm_campaign', 'utm_term', 'utm_content'], 'string', 'max' => 100],
+            [['country', 'country_code', 'city', 'os', 'browser', 'utm_source', 'utm_medium', 'utm_campaign', 'utm_term', 'utm_content'], 'string', 'max' => 100],
             [['language'], 'string', 'max' => 20],
             [['short_url_id'], 'exist', 'skipOnError' => true, 'targetClass' => ShortUrl::class, 'targetAttribute' => ['short_url_id' => 'id']],
         ];
@@ -73,6 +73,7 @@ class ScanLog extends \yii\db\ActiveRecord
             'referer' => 'Referer',
             'source' => 'Source',
             'country' => 'Country',
+            'country_code' => 'Country Code',
             'city' => 'City',
             'device_type' => 'Device Type',
             'os' => 'Os',

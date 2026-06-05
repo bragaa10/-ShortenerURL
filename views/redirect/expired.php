@@ -5,11 +5,11 @@
 use yii\helpers\Html;
 ?>
 <!DOCTYPE html>
-<html lang="pt-PT">
+<html lang="en-US">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Link Indisponível</title>
+    <title>Link Unavailable</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
@@ -52,10 +52,10 @@ use yii\helpers\Html;
 <body>
     <div class="container <?= $reason === 'expired' ? 'expired' : 'inactive' ?>">
         <i class="bi <?= $reason === 'expired' ? 'bi-clock-history' : 'bi-x-circle' ?> icon"></i>
-        <h1>Link Indisponível</h1>
+        <h1>Link Unavailable</h1>
         <p><?= Html::encode($message) ?></p>
-        <p style="margin-top: 8px;">Se acredita que isto é um erro, contacte o administrador.</p>
-        <a href="/" class="back-link"><i class="bi bi-house"></i> Página Inicial</a>
+        <p style="margin-top: 8px;">If you believe this is an error, please contact the administrator.</p>
+        <a href="/" class="back-link"><i class="bi bi-house"></i> Go to Home</a>
     </div>
 </body>
 </html>

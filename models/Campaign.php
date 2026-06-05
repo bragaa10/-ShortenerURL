@@ -66,12 +66,12 @@ class Campaign extends ActiveRecord
     {
         return [
             'id' => 'ID',
-            'user_id' => 'Utilizador',
-            'name' => 'Nome',
-            'description' => 'Descrição',
-            'status' => 'Estado',
-            'created_at' => 'Criado Em',
-            'updated_at' => 'Atualizado Em',
+            'user_id' => 'User',
+            'name' => 'Name',
+            'description' => 'Description',
+            'status' => 'Status',
+            'created_at' => 'Created At',
+            'updated_at' => 'Updated At',
         ];
     }
 
@@ -94,7 +94,7 @@ class Campaign extends ActiveRecord
      */
     public function getStatusLabel()
     {
-        return $this->status == self::STATUS_ACTIVE ? 'Ativa' : 'Inativa';
+        return $this->status == self::STATUS_ACTIVE ? 'Active' : 'Inactive';
     }
 
     /**
